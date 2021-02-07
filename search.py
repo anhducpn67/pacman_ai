@@ -87,12 +87,61 @@ def depthFirstSearch(problem):
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    from util import Counter, Stack
+    trace = Counter()
+    stack = Stack()
+    visitedState = list()
+    stack.push(problem.getStartState())
+    goal_state = None
+    while not stack.isEmpty():
+        state = stack.pop()
+        if state in visitedState:
+            continue
+        visitedState.append(state)
+        if problem.isGoalState(state):
+            goal_state = state
+            break
+        for successor in problem.getSuccessors(state):
+            nextState, action, cost = successor
+            if nextState not in visitedState:
+                trace[nextState] = (state, action)
+            stack.push(nextState)
+    # Trace path
+    direction = list()
+    while goal_state != problem.getStartState():
+        direction.append(trace[goal_state][1])
+        goal_state = trace[goal_state][0]
+    direction.reverse()
+    return direction
+
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    from util import Queue, Counter
+    queue = Queue()
+    trace = Counter()
+    queue.push(problem.getStartState())
+    trace[problem.getStartState()] = -1
+    goal_state = None
+    while not queue.isEmpty():
+        state = queue.pop()
+        if problem.isGoalState(state):
+            goal_state = state
+            break
+        for successor in problem.getSuccessors(state):
+            next_state, action, cost = successor
+            if trace[next_state] == 0:
+                trace[next_state] = (state, action)
+                queue.push(next_state)
+    # Trace path
+    direction = list()
+    while goal_state != problem.getStartState():
+        direction.append(trace[goal_state][1])
+        goal_state = trace[goal_state][0]
+    direction.reverse()
+    return direction
+
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
