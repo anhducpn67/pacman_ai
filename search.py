@@ -19,6 +19,7 @@ Pacman agents (in searchAgents.py).
 
 import util
 
+
 class SearchProblem:
     """
     This class outlines the structure of a search problem, but doesn't implement
@@ -70,7 +71,17 @@ def tinyMazeSearch(problem):
     from game import Directions
     s = Directions.SOUTH
     w = Directions.WEST
-    return  [s, s, w, s, w, w, s, w]
+    return [s, s, w, s, w, w, s, w]
+
+
+def tracePath(start_state, goal_state, trace):
+    direction = list()
+    while goal_state != start_state:
+        direction.append(trace[goal_state][1])
+        goal_state = trace[goal_state][0]
+    direction.reverse()
+    return direction
+
 
 def depthFirstSearch(problem):
     """
@@ -106,13 +117,7 @@ def depthFirstSearch(problem):
             if nextState not in visitedState:
                 trace[nextState] = (state, action)
             stack.push(nextState)
-    # Trace path
-    direction = list()
-    while goal_state != problem.getStartState():
-        direction.append(trace[goal_state][1])
-        goal_state = trace[goal_state][0]
-    direction.reverse()
-    return direction
+    return tracePath(problem.getStartState(), goal_state, trace)
 
 
 def breadthFirstSearch(problem):
@@ -134,13 +139,7 @@ def breadthFirstSearch(problem):
             if trace[next_state] == 0:
                 trace[next_state] = (state, action)
                 queue.push(next_state)
-    # Trace path
-    direction = list()
-    while goal_state != problem.getStartState():
-        direction.append(trace[goal_state][1])
-        goal_state = trace[goal_state][0]
-    direction.reverse()
-    return direction
+    return tracePath(problem.getStartState(), goal_state, trace)
 
 
 def uniformCostSearch(problem):
@@ -149,38 +148,27 @@ def uniformCostSearch(problem):
     from util import PriorityQueue, Counter
     trace = Counter()
     pq = PriorityQueue()
-    visitedState = list()
+    visited_state = list()
     pq.push(problem.getStartState(), 0)
     goal_state = None
     cost_state = Counter()
     while not pq.isEmpty():
         state = pq.pop()
-        if state in visitedState:
+        if state in visited_state:
             continue
-        visitedState.append(state)
+        visited_state.append(state)
         if problem.isGoalState(state):
             goal_state = state
             break
         for successor in problem.getSuccessors(state):
             nextState, action, cost = successor
-            if nextState not in visitedState:
-                if cost_state[nextState] == 0:
-                    trace[nextState] = (state, action)
-                    cost_state[nextState] = cost_state[state] + cost
-                    pq.push(nextState, cost_state[nextState])
-                else:
-                    if cost_state[nextState] > cost_state[state] + cost:
-                        cost_state[nextState] = cost_state[state] + cost
-                        trace[nextState] = (state, action)
-                        pq.update(nextState, cost_state[nextState])
-    # Trace path
-    direction = list()
-    while goal_state != problem.getStartState():
-        direction.append(trace[goal_state][1])
-        goal_state = trace[goal_state][0]
-    direction.reverse()
-    return direction
-
+            if nextState in visited_state:
+                continue
+            if cost_state[nextState] == 0 or cost_state[nextState] > cost_state[state] + cost:
+                trace[nextState] = (state, action)
+                cost_state[nextState] = cost_state[state] + cost
+                pq.update(nextState, cost_state[nextState])
+    return tracePath(problem.getStartState(), goal_state, trace)
 
 
 def nullHeuristic(state, problem=None):
@@ -190,10 +178,37 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
+
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    from util import PriorityQueue, Counter
+    pq = PriorityQueue()
+    f_state = Counter()
+    g_state = Counter()
+    trace = Counter()
+    visited_state = list()
+    goal_state = None
+    f_state[problem.getStartState()] = heuristic(problem.getStartState(), problem)
+    pq.push(problem.getStartState(), f_state[problem.getStartState()])
+    while not pq.isEmpty():
+        state = pq.pop()
+        if state in visited_state:
+            continue
+        if problem.isGoalState(state):
+            goal_state = state
+            break
+        visited_state.append(state)
+        for successor in problem.getSuccessors(state):
+            next_state, action, cost = successor
+            if next_state in visited_state:
+                continue
+            if f_state[next_state] == 0 or f_state[next_state] > g_state[state] + cost + heuristic(next_state, problem):
+                g_state[next_state] = g_state[state] + cost
+                f_state[next_state] = g_state[next_state] + heuristic(next_state, problem)
+                trace[next_state] = (state, action)
+                pq.update(next_state, f_state[next_state])
+    return tracePath(problem.getStartState(), goal_state, trace)
 
 
 # Abbreviations
