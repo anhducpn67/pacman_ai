@@ -97,7 +97,6 @@ def depthFirstSearch(problem):
     print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
-    "*** YOUR CODE HERE ***"
     from util import Counter, Stack
     trace = Counter()
     stack = Stack()
@@ -122,7 +121,6 @@ def depthFirstSearch(problem):
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
     from util import Queue, Counter
     queue = Queue()
     trace = Counter()
@@ -181,7 +179,6 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
     from util import PriorityQueue, Counter
     pq = PriorityQueue()
     f_state = Counter()
