@@ -142,7 +142,6 @@ def breadthFirstSearch(problem):
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
     from util import PriorityQueue, Counter
     trace = Counter()
     pq = PriorityQueue()
