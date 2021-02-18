@@ -12,23 +12,20 @@
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 
 
+# imports from python standard library
+import grading
 import imp
 import optparse
 import os
-import random
 import re
 import sys
-
-# imports from python standard library
-import grading
 import projectParams
-
+import random
 random.seed(0)
 try:
     from pacman import GameState
 except:
     pass
-
 
 # register arguments and set default values
 def readCommand(argv):
@@ -123,18 +120,21 @@ def setModuleName(module, filename):
         # print i, type(o)
 
 
-# from cStringIO import StringIO
+#from cStringIO import StringIO
 
 def loadModuleString(moduleSource):
     # Below broken, imp doesn't believe its being passed a file:
     #    ValueError: load_module arg#2 should be a file or None
     #
-    # f = StringIO(moduleCodeDict[k])
-    # tmp = imp.load_module(k, f, k, (".py", "r", imp.PY_SOURCE))
+    #f = StringIO(moduleCodeDict[k])
+    #tmp = imp.load_module(k, f, k, (".py", "r", imp.PY_SOURCE))
     tmp = imp.new_module(k)
     exec(moduleCodeDict[k], tmp.__dict__)
     setModuleName(tmp, k)
     return tmp
+
+
+import py_compile
 
 
 def loadModuleFile(moduleName, filePath):
@@ -237,7 +237,6 @@ def getDepends(testParser, testRoot, question):
             allDeps = getDepends(testParser, testRoot, d) + allDeps
     return allDeps
 
-
 # get list of questions to grade
 def getTestSubdirs(testParser, testRoot, questionToGrade):
     problemDict = testParser.TestParser(
@@ -303,17 +302,14 @@ def evaluate(generateSolutions, testRoot, moduleDict, exceptionMap=ERROR_HINT_MA
                     testDict = testParser.TestParser(test_file).parse()
                     solutionDict = testParser.TestParser(solution_file).parse()
                     if printTestCase:
-                        return lambda grades: printTest(testDict, solutionDict) or testCase.execute(grades, moduleDict,
-                                                                                                    solutionDict)
+                        return lambda grades: printTest(testDict, solutionDict) or testCase.execute(grades, moduleDict, solutionDict)
                     else:
                         return lambda grades: testCase.execute(grades, moduleDict, solutionDict)
-
             question.addTestCase(testCase, makefun(testCase, solution_file))
 
         # Note extra function is necessary for scoping reasons
         def makefun(question):
             return lambda grades: question.execute(grades)
-
         setattr(sys.modules[__name__], q, makefun(question))
         questions.append((q, question.getMaxPoints()))
 

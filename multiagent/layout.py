@@ -12,12 +12,11 @@
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 
 
+from util import manhattanDistance
+from game import Grid
 import os
 import random
 from functools import reduce
-
-from game import Grid
-from util import manhattanDistance
 
 VISIBILITY_MATRIX_CACHE = {}
 
@@ -156,7 +155,7 @@ def getLayout(name, back=2):
 
 
 def tryToLoad(fullname):
-    if (not os.path.exists(fullname)):
+    if(not os.path.exists(fullname)):
         return None
     f = open(fullname)
     try:

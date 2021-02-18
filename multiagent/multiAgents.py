@@ -13,9 +13,10 @@
 
 
 import random
-
 import util
+
 from game import Agent
+from game import Directions
 
 
 class ReflexAgent(Agent):
@@ -71,9 +72,23 @@ class ReflexAgent(Agent):
         newFood = successorGameState.getFood()
         newGhostStates = successorGameState.getGhostStates()
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
-
-        "*** YOUR CODE HERE ***"
-        return successorGameState.getScore()
+        scaleImportantDistanceGhost = [0] * 1000
+        scaleImportantDistanceGhost[1] = -10000
+        scaleImportantDistanceGhost[2] = -1000
+        scaleImportantDistanceGhost[3] = -100
+        scaleImportantDistanceGhost[4] = -10
+        totalDistanceFromGhost = 0
+        for ghost in newGhostStates:
+            totalDistanceFromGhost = totalDistanceFromGhost + scaleImportantDistanceGhost[
+                int(abs(newPos[0] - ghost.getPosition()[0]) + abs(newPos[1] - ghost.getPosition()[1]))]
+        minDistanceFromFood = 999999
+        for food in currentGameState.getFood().asList():
+            minDistanceFromFood = min(minDistanceFromFood, abs(food[0] - newPos[0]) + abs(food[1] - newPos[1]))
+        isScared = 1
+        if newScaredTimes[0] > 0:
+            isScared = -1
+        score = -minDistanceFromFood + totalDistanceFromGhost * isScared
+        return score
 
 
 def scoreEvaluationFunction(currentGameState):
@@ -113,6 +128,44 @@ class MinimaxAgent(MultiAgentSearchAgent):
     Your minimax agent (question 2)
     """
 
+    def recursiveMinimaxTree(self, gameState, agentIndex, curDepth):
+        # Base case
+        if curDepth == self.depth:
+            return self.evaluationFunction(gameState), Directions.STOP
+        if gameState.isWin():
+            return self.evaluationFunction(gameState), Directions.STOP
+        if gameState.isLose():
+            return self.evaluationFunction(gameState), Directions.STOP
+
+        # Initialization
+        legal_actions = gameState.getLegalActions(agentIndex=agentIndex)
+        result_action = Directions.STOP
+        if agentIndex == 0:  # Max
+            result_score = -9999999
+        else:
+            result_score = 9999999
+        successor_agent_index = agentIndex + 1
+        successor_depth = curDepth
+        if successor_agent_index == gameState.getNumAgents():
+            successor_agent_index = 0
+        if agentIndex == gameState.getNumAgents() - 1:
+            successor_depth += 1
+
+        # Recursion
+        for action in legal_actions:
+            successor_game_state = gameState.generateSuccessor(agentIndex, action)
+            evaluation_score = self.recursiveMinimaxTree(successor_game_state, successor_agent_index,
+                                                         successor_depth)
+            if agentIndex == 0:  # Max
+                if result_score < evaluation_score[0]:
+                    result_score = evaluation_score[0]
+                    result_action = action
+            else:
+                if result_score > evaluation_score[0]:
+                    result_score = evaluation_score[0]
+                    result_action = action
+        return result_score, result_action
+
     def getAction(self, gameState):
         """
         Returns the minimax action from the current gameState using self.depth
@@ -136,8 +189,8 @@ class MinimaxAgent(MultiAgentSearchAgent):
         gameState.isLose():
         Returns whether or not the game state is a losing state
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        _, result_action = self.recursiveMinimaxTree(gameState, 0, 0)
+        return result_action
 
 
 class AlphaBetaAgent(MultiAgentSearchAgent):

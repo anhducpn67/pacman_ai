@@ -12,10 +12,6 @@
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 
 
-import json
-from collections import defaultdict
-from pprint import PrettyPrinter
-
 # A minimax tree which interfaces like gameState
 #     state.getNumAgents()
 #     state.isWin()
@@ -25,16 +21,23 @@ from pprint import PrettyPrinter
 #           used by multiAgents.scoreEvaluationFunction, which is the default
 #
 import testClasses
+import json
 
+from collections import defaultdict
+from pprint import PrettyPrinter
 pp = PrettyPrinter()
 
 from game import Agent
 from pacman import GameState
-from ghostAgents import DirectionalGhost
+from ghostAgents import RandomGhost, DirectionalGhost
 import random
+import math
+import traceback
+import sys
+import os
 import layout
 import pacman
-
+import autograder
 # import grading
 
 VERBOSE = False
@@ -48,8 +51,7 @@ class MultiagentTreeState(object):
     def generateSuccessor(self, agentIndex, action):
         if VERBOSE:
             print("generateSuccessor(%s, %s, %s) -> %s" % (self.state, agentIndex,
-                                                           action,
-                                                           self.problem.stateToSuccessorMap[self.state][action]))
+                                                           action, self.problem.stateToSuccessorMap[self.state][action]))
         successor = self.problem.stateToSuccessorMap[self.state][action]
         self.problem.generatedStates.add(successor)
         return MultiagentTreeState(self.problem, successor)
@@ -149,10 +151,8 @@ def run(lay, layName, pac, ghosts, disp, nGames=1, name='games'):
                             nGames, False, catchExceptions=True, timeout=120)
     print('*** Finished running %s on' % name, layName,
           'after %d seconds.' % (time.time() - starttime))
-    stats = {'time': time.time() - starttime, 'wins': [g.state.isWin() for g in games].count(True), 'games': games,
-             'scores': [g.state.getScore() for g in games],
-             'timeouts': [g.agentTimeout for g in games].count(True),
-             'crashes': [g.agentCrashed for g in games].count(True)}
+    stats = {'time': time.time() - starttime, 'wins': [g.state.isWin() for g in games].count(True), 'games': games, 'scores': [g.state.getScore() for g in games],
+             'timeouts': [g.agentTimeout for g in games].count(True), 'crashes': [g.agentCrashed for g in games].count(True)}
     print('*** Won %d out of %d games. Average score: %f ***' %
           (stats['wins'], len(games), sum(stats['scores']) * 1.0 / len(games)))
     return stats
@@ -279,7 +279,7 @@ class PolyAgent(Agent):
             multiAgents.StaffMultiAgentSearchAgent(**keyword_dict)]
         keyword_dict['keepStop'] = 'False'
         partial_ply_bug_pacs = partial_ply_bug_pacs + \
-                               [multiAgents.StaffMultiAgentSearchAgent(**keyword_dict)]
+            [multiAgents.StaffMultiAgentSearchAgent(**keyword_dict)]
         for pac in pacs_with_stop + pacs_without_stop + partial_ply_bug_pacs:
             pac.verbose = False
         ourpac = [pacs_with_stop[0], pacs_without_stop[0]]
@@ -464,6 +464,7 @@ class GraphGameTreeTest(testClasses.TestCase):
 
 
 import time
+from util import TimeoutFunction
 
 
 class EvalAgentTest(testClasses.TestCase):
@@ -492,7 +493,7 @@ class EvalAgentTest(testClasses.TestCase):
             'winsThresholds', '').split()]
 
         self.maxPoints = sum([len(t) for t in [
-            self.scoreThresholds, self.nonTimeoutThresholds, self.winsThresholds]])
+                             self.scoreThresholds, self.nonTimeoutThresholds, self.winsThresholds]])
         self.agentArgs = testDict.get('agentArgs', '')
 
     def execute(self, grades, moduleDict, solutionDict):
@@ -514,8 +515,7 @@ class EvalAgentTest(testClasses.TestCase):
 
         stats = {'time': totalTime, 'wins': [g.state.isWin() for g in games].count(True),
                  'games': games, 'scores': [g.state.getScore() for g in games],
-                 'timeouts': [g.agentTimeout for g in games].count(True),
-                 'crashes': [g.agentCrashed for g in games].count(True)}
+                 'timeouts': [g.agentTimeout for g in games].count(True), 'crashes': [g.agentCrashed for g in games].count(True)}
 
         averageScore = sum(stats['scores']) / float(len(stats['scores']))
         nonTimeouts = self.numGames - stats['timeouts']
@@ -557,13 +557,13 @@ class EvalAgentTest(testClasses.TestCase):
                     self.addMessage("    >= %s:  0 points" % (minimum,))
                 for idx, threshold in enumerate(thresholds):
                     self.addMessage("    >= %s:  %s points" %
-                                    (threshold, idx + 1))
+                                    (threshold, idx+1))
             elif len(thresholds) > 0:
                 self.addMessage("    Grading scheme:")
                 self.addMessage("     < %s:  0 points" % (thresholds[0],))
                 for idx, threshold in enumerate(thresholds):
                     self.addMessage("    >= %s:  %s points" %
-                                    (threshold, idx + 1))
+                                    (threshold, idx+1))
 
         if any([not passed for passed, _, _, _, _, _ in results]):
             totalPoints = 0

@@ -14,6 +14,7 @@
 
 # import modules from python standard library
 import inspect
+import re
 import sys
 
 
@@ -44,7 +45,6 @@ class Question(object):
 
     def execute(self, grades):
         self.raiseNotDefined()
-
 
 # Question in which all test cases must be passed in order to receive credit
 class PassAllTestsQuestion(Question):
@@ -79,7 +79,6 @@ class ExtraCreditPassAllTestsQuestion(Question):
         else:
             grades.assignFullCredit()
             grades.addPoints(self.extraPoints)
-
 
 # Question in which predict credit is given for test cases with a ``points'' property.
 # All other tests are mandatory and must be passed.

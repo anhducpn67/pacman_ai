@@ -13,7 +13,6 @@
 
 
 import time
-
 try:
     import pacman
 except:

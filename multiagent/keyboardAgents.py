@@ -12,10 +12,9 @@
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 
 
-import random
-
 from game import Agent
 from game import Directions
+import random
 
 
 class KeyboardAgent(Agent):
