@@ -350,7 +350,7 @@ def betterEvaluationFunction(currentGameState):
     minDistanceFromFood = 99999999
     for food in currentGameState.getFood().asList():
         minDistanceFromFood = min(minDistanceFromFood, distance[food])
-    totalDistanceFromGhost = 0
+    distanceToGhost = 0
     idxGhost = -1
     for ghost in ghost_states:
         xG, yG = int(ghost.getPosition()[0]), int(ghost.getPosition()[1])
@@ -358,8 +358,8 @@ def betterEvaluationFunction(currentGameState):
         isScared = 10
         if scared_time[idxGhost] > 1:
             isScared = -1
-        totalDistanceFromGhost = totalDistanceFromGhost + scaleImportantDistanceGhost[distance[(xG, yG)]] * isScared
-    score = -numberFoodRemain * 1000 - minDistanceFromFood * 100 + totalDistanceFromGhost
+        distanceToGhost = distanceToGhost + scaleImportantDistanceGhost[distance[(xG, yG)]] * isScared
+    score = -numberFoodRemain * 1000 - minDistanceFromFood * 100 + distanceToGhost
     return score
 
 
